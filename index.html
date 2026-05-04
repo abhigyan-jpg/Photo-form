@@ -693,9 +693,18 @@ async function handleSubmit() {
     formData.append('mobile', document.getElementById('fieldMobile').value.trim());
     formData.append('timestamp', new Date().toISOString());
 
-    photos.forEach((blob, i) => {
-      formData.append('photo' + (i+1), blob, 'photo' + (i+1) + '.jpg');
-    });
+    async function blobToBase64(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+}
+
+for (let i = 0; i < photos.length; i++) {
+  const base64 = await blobToBase64(photos[i]);
+  formData.append('photo' + (i+1), base64);
+}
 
     // If no Apps Script URL set, simulate success for demo
     if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
