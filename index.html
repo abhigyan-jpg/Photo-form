@@ -701,10 +701,26 @@ async function handleSubmit() {
   });
 }
 
+// ✅ Step 1: ensure all 4 photos exist
+for (let i = 0; i < photos.length; i++) {
+  if (!photos[i]) {
+    alert("Photo " + (i+1) + " is missing");
+    return;
+  }
+}
+
+// ✅ Step 2: convert ALL first
+const base64Photos = [];
+
 for (let i = 0; i < photos.length; i++) {
   const base64 = await blobToBase64(photos[i]);
-  formData.append('photo' + (i+1), base64);
+  base64Photos.push(base64);
 }
+
+// ✅ Step 3: append AFTER all conversions
+base64Photos.forEach((b64, i) => {
+  formData.append('photo' + (i+1), b64);
+});
 
     // If no Apps Script URL set, simulate success for demo
     if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
