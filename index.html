@@ -1,775 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Photo Submission Form</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --ink: #1a1a2e;
-    --ink-soft: #4a4a6a;
-    --ink-muted: #9090b0;
-    --surface: #f5f4f0;
-    --card: #ffffff;
-    --border: #e2e0da;
-    --accent: #2d5be3;
-    --accent-light: #eef1fd;
-    --accent-dark: #1a3fbf;
-    --success: #0f7a55;
-    --success-bg: #e6f5f0;
-    --danger: #c0392b;
-    --danger-bg: #fdf0ee;
-    --radius: 14px;
-    --radius-sm: 8px;
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--surface);
-    color: var(--ink);
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  /* Header */
-  .header {
-    background: var(--ink);
-    color: #fff;
-    padding: 28px 20px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    background: rgba(45,91,227,0.25);
-  }
-  .header::after {
-    content: '';
-    position: absolute;
-    bottom: -60px; left: 30px;
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.05);
-  }
-  .header-inner { position: relative; z-index: 1; }
-  .header-tag {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 6px;
-  }
-  .header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 26px;
-    font-weight: 400;
-    line-height: 1.2;
-    color: #fff;
-    margin-bottom: 6px;
-  }
-  .header p {
-    font-size: 13px;
-    color: rgba(255,255,255,0.55);
-    line-height: 1.5;
-  }
-
-  /* Progress bar */
-  .progress-wrap {
-    background: rgba(255,255,255,0.1);
-    height: 3px;
-    margin-top: 20px;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .progress-bar {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    width: 0%;
-  }
-
-  /* Body */
-  .body { padding: 20px 16px 40px; max-width: 480px; margin: 0 auto; }
-
-  /* Section */
-  .section {
-    background: var(--card);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    padding: 20px;
-    margin-bottom: 16px;
-    animation: fadeUp 0.4s ease both;
-  }
-  .section:nth-child(1) { animation-delay: 0.05s; }
-  .section:nth-child(2) { animation-delay: 0.1s; }
-  .section:nth-child(3) { animation-delay: 0.15s; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .section-title {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: 16px;
-  }
-
-  /* Fields */
-  .field { margin-bottom: 14px; }
-  .field:last-child { margin-bottom: 0; }
-  .field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--ink-soft);
-    margin-bottom: 6px;
-    letter-spacing: 0.02em;
-  }
-  .field label span.req { color: var(--danger); margin-left: 2px; }
-
-  .field input[type="text"],
-  .field input[type="tel"],
-  .field input[type="number"] {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    color: var(--ink);
-    background: var(--surface);
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
-    -webkit-appearance: none;
-  }
-  .field input:focus {
-    border-color: var(--accent);
-    background: #fff;
-  }
-  .field input.error { border-color: var(--danger); }
-  .field .err-msg {
-    font-size: 11px;
-    color: var(--danger);
-    margin-top: 4px;
-    display: none;
-  }
-  .field input.error + .err-msg { display: block; }
-
-  /* Photo slots */
-  .photo-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .photo-slot {
-    position: relative;
-    aspect-ratio: 3/4;
-    border-radius: var(--radius-sm);
-    border: 1.5px dashed var(--border);
-    background: var(--surface);
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .photo-slot:hover { border-color: var(--accent); background: var(--accent-light); }
-  .photo-slot.has-photo { border-style: solid; border-color: var(--success); }
-  .photo-slot.error-slot { border-color: var(--danger); }
-
-  .slot-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .slot-icon {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--accent-light);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .slot-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--ink-soft);
-    text-align: center;
-    line-height: 1.3;
-    padding: 0 6px;
-  }
-  .slot-num {
-    font-size: 10px;
-    color: var(--ink-muted);
-  }
-
-  .slot-preview {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-  }
-  .photo-slot.has-photo .slot-preview { display: block; }
-  .photo-slot.has-photo .slot-placeholder { display: none; }
-
-  .slot-badge {
-    position: absolute;
-    top: 6px; right: 6px;
-    background: rgba(0,0,0,0.55);
-    color: #fff;
-    font-size: 9px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 20px;
-    display: none;
-  }
-  .photo-slot.has-photo .slot-badge { display: block; }
-
-  .slot-retake {
-    position: absolute;
-    bottom: 6px; left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-    display: none;
-  }
-  .photo-slot.has-photo .slot-retake { display: block; }
-
-  .photo-note {
-    margin-top: 10px;
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    background: var(--accent-light);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-  }
-  .photo-note-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
-  .photo-note p { font-size: 11px; color: var(--accent-dark); line-height: 1.5; }
-
-  .photos-err {
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--danger);
-    display: none;
-  }
-
-  /* Size indicator */
-  .size-bar-wrap {
-    margin-top: 4px;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .size-bar {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-
-  /* Spinner */
-  .spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Submit */
-  .submit-btn {
-    width: 100%;
-    padding: 16px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.02em;
-    transition: background 0.2s, transform 0.1s;
-    margin-top: 8px;
-  }
-  .submit-btn:hover { background: var(--accent-dark); }
-  .submit-btn:active { transform: scale(0.98); }
-  .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
-
-  /* Success state */
-  .success-screen {
-    display: none;
-    text-align: center;
-    padding: 40px 20px;
-  }
-  .success-screen.show { display: block; }
-  .success-icon {
-    width: 72px; height: 72px;
-    background: var(--success-bg);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px;
-    margin: 0 auto 20px;
-  }
-  .success-screen h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 24px;
-    font-weight: 400;
-    color: var(--ink);
-    margin-bottom: 8px;
-  }
-  .success-screen p {
-    font-size: 14px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-  }
-  .success-screen .new-btn {
-    display: inline-block;
-    margin-top: 24px;
-    padding: 12px 28px;
-    background: var(--ink);
-    color: #fff;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  /* Compressing overlay on slot */
-  .slot-compressing {
-    position: absolute;
-    inset: 0;
-    background: rgba(26,26,46,0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .slot-compressing.active { display: flex; }
-  .slot-compressing p { color: #fff; font-size: 10px; }
-
-  input[type="file"] { display: none; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Form</title>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-inner">
-    <div class="header-tag">Submission Form</div>
-    <h1>Photo Documentation</h1>
-    <p>Fill in your details and capture 4 photos. Each photo is automatically compressed to under 2 MB.</p>
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-  </div>
-</div>
+<h2>Photo Form</h2>
 
-<div class="body">
+<input id="fieldId" placeholder="ID"><br><br>
+<input id="fieldName" placeholder="Name"><br><br>
+<input id="fieldMobile" placeholder="Mobile"><br><br>
 
-  <!-- Personal Details -->
-  <div class="section">
-    <div class="section-title">Personal Details</div>
+<input type="file" id="p0" accept="image/*"><br><br>
+<input type="file" id="p1" accept="image/*"><br><br>
+<input type="file" id="p2" accept="image/*"><br><br>
+<input type="file" id="p3" accept="image/*"><br><br>
 
-    <div class="field">
-      <label>ID Number <span class="req">*</span></label>
-      <input type="text" id="fieldId" placeholder="e.g. EMP-00123" autocomplete="off">
-      <div class="err-msg">Please enter your ID number.</div>
-    </div>
-
-    <div class="field">
-      <label>Full Name <span class="req">*</span></label>
-      <input type="text" id="fieldName" placeholder="Your full name" autocomplete="name">
-      <div class="err-msg">Please enter your full name.</div>
-    </div>
-
-    <div class="field">
-      <label>Mobile Number <span class="req">*</span></label>
-      <input type="tel" id="fieldMobile" placeholder="+91 98765 43210" autocomplete="tel">
-      <div class="err-msg">Please enter a valid mobile number.</div>
-    </div>
-  </div>
-
-  <!-- Photos -->
-  <div class="section">
-    <div class="section-title">Photo Capture</div>
-
-    <div class="photo-grid">
-      <!-- 4 slots -->
-      <div class="photo-slot" id="slot0" onclick="triggerCamera(0)">
-        <div class="slot-placeholder">
-          <div class="slot-icon">📷</div>
-          <div class="slot-label">Photo 1</div>
-          <div class="slot-num">Tap to capture</div>
-        </div>
-        <img class="slot-preview" id="preview0" alt="Photo 1">
-        <div class="slot-badge" id="badge0"></div>
-        <div class="slot-retake">↺ Retake</div>
-        <div class="slot-compressing" id="comp0">
-          <div class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3);"></div>
-          <p>Compressing…</p>
-        </div>
-      </div>
-
-      <div class="photo-slot" id="slot1" onclick="triggerCamera(1)">
-        <div class="slot-placeholder">
-          <div class="slot-icon">📷</div>
-          <div class="slot-label">Photo 2</div>
-          <div class="slot-num">Tap to capture</div>
-        </div>
-        <img class="slot-preview" id="preview1" alt="Photo 2">
-        <div class="slot-badge" id="badge1"></div>
-        <div class="slot-retake">↺ Retake</div>
-        <div class="slot-compressing" id="comp1">
-          <div class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3);"></div>
-          <p>Compressing…</p>
-        </div>
-      </div>
-
-      <div class="photo-slot" id="slot2" onclick="triggerCamera(2)">
-        <div class="slot-placeholder">
-          <div class="slot-icon">📷</div>
-          <div class="slot-label">Photo 3</div>
-          <div class="slot-num">Tap to capture</div>
-        </div>
-        <img class="slot-preview" id="preview2" alt="Photo 3">
-        <div class="slot-badge" id="badge2"></div>
-        <div class="slot-retake">↺ Retake</div>
-        <div class="slot-compressing" id="comp2">
-          <div class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3);"></div>
-          <p>Compressing…</p>
-        </div>
-      </div>
-
-      <div class="photo-slot" id="slot3" onclick="triggerCamera(3)">
-        <div class="slot-placeholder">
-          <div class="slot-icon">📷</div>
-          <div class="slot-label">Photo 4</div>
-          <div class="slot-num">Tap to capture</div>
-        </div>
-        <img class="slot-preview" id="preview3" alt="Photo 4">
-        <div class="slot-badge" id="badge3"></div>
-        <div class="slot-retake">↺ Retake</div>
-        <div class="slot-compressing" id="comp3">
-          <div class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3);"></div>
-          <p>Compressing…</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="photo-note">
-      <div class="photo-note-icon">ℹ</div>
-      <p>Photos are auto-compressed to <strong>1–2 MB</strong> before submission. Tap any slot to open your camera. You can retake a photo by tapping it again.</p>
-    </div>
-
-    <div class="photos-err" id="photosErr">Please capture all 4 photos before submitting.</div>
-  </div>
-
-  <!-- Hidden file inputs -->
-  <input type="file" id="cam0" accept="image/*" capture="environment" onchange="handleCapture(event,0)">
-  <input type="file" id="cam1" accept="image/*" capture="environment" onchange="handleCapture(event,1)">
-  <input type="file" id="cam2" accept="image/*" capture="environment" onchange="handleCapture(event,2)">
-  <input type="file" id="cam3" accept="image/*" capture="environment" onchange="handleCapture(event,3)">
-
-  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Submit Form</button>
-
-  <!-- Success screen (hidden until submitted) -->
-  <div class="success-screen" id="successScreen">
-    <div class="success-icon">✓</div>
-    <h2>Submitted!</h2>
-    <p>Your details and 4 photos have been submitted successfully. You'll receive a confirmation shortly.</p>
-    <button class="new-btn" onclick="resetForm()">Submit Another</button>
-  </div>
-
-</div>
+<button onclick="submitForm()">Submit</button>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────
-// Paste your Google Apps Script Web App URL here after deploying:
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxnN35oEH2EdmU8UVNVQH5LXfaSC3x6cR8nG9IOuVSdVMloKc_S2EPxaCVigWvDs9nPFQ/exec';
+const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 
-const MAX_MB = 2;           // hard cap in MB
-const TARGET_MB = 1.5;      // aim for this
-const MAX_WIDTH = 1920;     // max dimension in pixels
-const MIN_QUALITY = 0.30;   // never go below this quality
-
-// ─── STATE ───────────────────────────────────────────────────
-const photos = [null, null, null, null]; // stores compressed Blobs
-
-// ─── COMPRESSION ─────────────────────────────────────────────
-function compressToTarget(file) {
+async function blobToBase64(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        // Scale down if huge
-        if (w > MAX_WIDTH || h > MAX_WIDTH) {
-          const ratio = Math.min(MAX_WIDTH/w, MAX_WIDTH/h);
-          w = Math.round(w * ratio);
-          h = Math.round(h * ratio);
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-
-        // Binary search for quality that hits target
-        let lo = MIN_QUALITY, hi = 0.92, best = null;
-        const maxBytes = MAX_MB * 1024 * 1024;
-        const targetBytes = TARGET_MB * 1024 * 1024;
-
-        function tryQuality(q) {
-          return new Promise(r => canvas.toBlob(b => r(b), 'image/jpeg', q));
-        }
-
-        async function search() {
-          // Quick check: if original is already under target, use high quality
-          const highQ = await tryQuality(0.85);
-          if (highQ.size <= targetBytes) { resolve(highQ); return; }
-
-          // Binary search
-          for (let i = 0; i < 6; i++) {
-            const mid = (lo + hi) / 2;
-            const blob = await tryQuality(mid);
-            if (blob.size <= maxBytes) {
-              best = blob;
-              lo = mid; // try higher quality
-            } else {
-              hi = mid; // reduce quality
-            }
-          }
-
-          if (!best) {
-            // fallback: force min quality
-            best = await tryQuality(MIN_QUALITY);
-          }
-          resolve(best);
-        }
-
-        search();
-      };
-      img.src = e.target.result;
-    };
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
     reader.readAsDataURL(file);
   });
 }
 
-// ─── CAMERA TRIGGER ──────────────────────────────────────────
-function triggerCamera(idx) {
-  // Reset the input so same file can be re-selected
-  const input = document.getElementById('cam' + idx);
-  input.value = '';
-  input.click();
-}
+async function submitForm() {
+  const id = document.getElementById('fieldId').value;
+  const name = document.getElementById('fieldName').value;
+  const mobile = document.getElementById('fieldMobile').value;
 
-// ─── HANDLE CAPTURE ──────────────────────────────────────────
-async function handleCapture(e, idx) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const inputs = [
+    document.getElementById('p0').files[0],
+    document.getElementById('p1').files[0],
+    document.getElementById('p2').files[0],
+    document.getElementById('p3').files[0]
+  ];
 
-  const slot = document.getElementById('slot' + idx);
-  const comp = document.getElementById('comp' + idx);
-  const preview = document.getElementById('preview' + idx);
-  const badge = document.getElementById('badge' + idx);
-
-  // Show compressing overlay
-  comp.classList.add('active');
-  slot.classList.remove('has-photo', 'error-slot');
-
-  const blob = await compressToTarget(file);
-  photos[idx] = blob;
-
-  const mb = (blob.size / (1024*1024)).toFixed(2);
-  badge.textContent = mb + ' MB';
-
-  const url = URL.createObjectURL(blob);
-  preview.src = url;
-
-  comp.classList.remove('active');
-  slot.classList.add('has-photo');
-
-  // Clear photos error
-  document.getElementById('photosErr').style.display = 'none';
-
-  updateProgress();
-}
-
-// ─── PROGRESS ────────────────────────────────────────────────
-function updateProgress() {
-  const filled = photos.filter(p => p !== null).length;
-  const fields = ['fieldId','fieldName','fieldMobile'];
-  const filledFields = fields.filter(id => document.getElementById(id).value.trim() !== '').length;
-  const total = 7; // 3 fields + 4 photos
-  const done = filledFields + filled;
-  document.getElementById('progressBar').style.width = Math.round((done/total)*100) + '%';
-}
-
-// Listen for field changes to update progress
-['fieldId','fieldName','fieldMobile'].forEach(id => {
-  document.getElementById(id).addEventListener('input', updateProgress);
-});
-
-// ─── VALIDATION ──────────────────────────────────────────────
-function validate() {
-  let ok = true;
-
-  const fieldId = document.getElementById('fieldId');
-  const fieldName = document.getElementById('fieldName');
-  const fieldMobile = document.getElementById('fieldMobile');
-
-  [fieldId, fieldName, fieldMobile].forEach(f => {
-    if (!f.value.trim()) { f.classList.add('error'); ok = false; }
-    else f.classList.remove('error');
-  });
-
-  // Mobile: at least 7 digits
-  if (fieldMobile.value.trim() && fieldMobile.value.replace(/\D/g,'').length < 7) {
-    fieldMobile.classList.add('error'); ok = false;
+  if (inputs.some(p => !p)) {
+    alert("All 4 photos required");
+    return;
   }
 
-  const allPhotos = photos.every(p => p !== null);
-  if (!allPhotos) {
-    document.getElementById('photosErr').style.display = 'block';
-    // highlight missing slots
-    photos.forEach((p, i) => {
-      if (!p) document.getElementById('slot'+i).classList.add('error-slot');
+  const baseData = {
+    id, name, mobile,
+    timestamp: new Date().toISOString()
+  };
+
+  const urls = [];
+
+  // 🔥 upload one by one
+  for (let i = 0; i < inputs.length; i++) {
+    const base64 = await blobToBase64(inputs[i]);
+
+    const fd = new FormData();
+    fd.append("id", id);
+    fd.append("name", name);
+    fd.append("mobile", mobile);
+    fd.append("timestamp", baseData.timestamp);
+
+    fd.append("photoIndex", i+1);
+    fd.append("photoData", base64);
+
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: fd
     });
-    ok = false;
+
+    const data = await res.json();
+    urls.push(data.url);
   }
 
-  return ok;
-}
+  // 🔥 final save
+  const final = new FormData();
+  final.append("final", "true");
 
-// ─── SUBMIT ──────────────────────────────────────────────────
-async function handleSubmit() {
-  if (!validate()) {
-    // Scroll to first error
-    const firstErr = document.querySelector('.error, .error-slot');
-    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
+  final.append("id", id);
+  final.append("name", name);
+  final.append("mobile", mobile);
+  final.append("timestamp", baseData.timestamp);
 
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Submitting…';
+  urls.forEach((u,i)=> final.append("photo"+(i+1), u));
 
-  try {
-    const formData = new FormData();
-    formData.append('id', document.getElementById('fieldId').value.trim());
-    formData.append('name', document.getElementById('fieldName').value.trim());
-    formData.append('mobile', document.getElementById('fieldMobile').value.trim());
-    formData.append('timestamp', new Date().toISOString());
-
-    async function blobToBase64(blob) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    reader.readAsDataURL(blob);
+  await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    body: final
   });
-}
 
-// ✅ Step 1: ensure all 4 photos exist
-for (let i = 0; i < photos.length; i++) {
-  if (!photos[i]) {
-    alert("Photo " + (i+1) + " is missing");
-    return;
-  }
-}
-
-// ✅ Step 2: convert ALL first
-const base64Photos = [];
-
-for (let i = 0; i < photos.length; i++) {
-  const base64 = await blobToBase64(photos[i]);
-  base64Photos.push(base64);
-}
-
-// ✅ Step 3: append AFTER all conversions
-base64Photos.forEach((b64, i) => {
-  formData.append('photo' + (i+1), b64);
-});
-
-    // If no Apps Script URL set, simulate success for demo
-    if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-      await new Promise(r => setTimeout(r, 1500)); // fake delay
-      showSuccess();
-      return;
-    }
-
-    const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    showSuccess();
-
-  } catch (err) {
-    btn.disabled = false;
-    btn.innerHTML = 'Submit Form';
-    alert('Submission failed. Please check your connection and try again.\n\n' + err.message);
-  }
-}
-
-function showSuccess() {
-  document.querySelector('.body').querySelectorAll('.section').forEach(s => s.style.display = 'none');
-  document.getElementById('submitBtn').style.display = 'none';
-  document.getElementById('successScreen').classList.add('show');
-  document.getElementById('progressBar').style.width = '100%';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function resetForm() {
-  // Reset all state
-  photos.fill(null);
-  ['fieldId','fieldName','fieldMobile'].forEach(id => {
-    const el = document.getElementById(id);
-    el.value = '';
-    el.classList.remove('error');
-  });
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('slot'+i).className = 'photo-slot';
-    document.getElementById('preview'+i).src = '';
-    document.getElementById('badge'+i).textContent = '';
-  }
-  document.getElementById('photosErr').style.display = 'none';
-  document.querySelector('.body').querySelectorAll('.section').forEach(s => s.style.display = 'block');
-  const btn = document.getElementById('submitBtn');
-  btn.style.display = 'block';
-  btn.disabled = false;
-  btn.innerHTML = 'Submit Form';
-  document.getElementById('successScreen').classList.remove('show');
-  document.getElementById('progressBar').style.width = '0%';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  alert("SUCCESS ✅");
 }
 </script>
 
