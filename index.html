@@ -1,100 +1,363 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Form</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Photo Submission Form</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--ink:#1a1a2e;--ink-soft:#4a4a6a;--ink-muted:#9090b0;--surface:#f5f4f0;--card:#fff;--border:#e2e0da;--accent:#2d5be3;--accent-light:#eef1fd;--accent-dark:#1a3fbf;--success:#0f7a55;--danger:#c0392b;--radius:14px;--radius-sm:8px}
+  body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
+  .header{background:var(--ink);color:#fff;padding:28px 20px 24px;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(45,91,227,.25)}
+  .header-inner{position:relative;z-index:1}
+  .header-tag{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px}
+  .header h1{font-family:'DM Serif Display',serif;font-size:26px;font-weight:400;color:#fff;margin-bottom:6px}
+  .header p{font-size:13px;color:rgba(255,255,255,.55);line-height:1.5}
+  .progress-wrap{background:rgba(255,255,255,.1);height:3px;margin-top:20px;border-radius:2px;overflow:hidden}
+  .progress-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease;width:0%}
+  .body{padding:20px 16px 40px;max-width:480px;margin:0 auto}
+  .section{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+  .section-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:16px}
+  .field{margin-bottom:14px}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:6px}
+  .req{color:var(--danger);margin-left:2px}
+  .field input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);background:var(--surface);outline:none;transition:border-color .2s;-webkit-appearance:none}
+  .field input:focus{border-color:var(--accent);background:#fff}
+  .field input.error{border-color:var(--danger)}
+  .err-msg{font-size:11px;color:var(--danger);margin-top:4px;display:none}
+  .field input.error + .err-msg{display:block}
+  .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .photo-slot{position:relative;aspect-ratio:3/4;border-radius:var(--radius-sm);border:1.5px dashed var(--border);background:var(--surface);overflow:hidden;cursor:pointer;transition:border-color .2s,background .2s}
+  .photo-slot:hover{border-color:var(--accent);background:var(--accent-light)}
+  .photo-slot.has-photo{border-style:solid;border-color:var(--success)}
+  .photo-slot.error-slot{border-color:var(--danger)}
+  .slot-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+  .slot-icon{width:36px;height:36px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .slot-label{font-size:11px;font-weight:500;color:var(--ink-soft);text-align:center}
+  .slot-num{font-size:10px;color:var(--ink-muted)}
+  .slot-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+  .photo-slot.has-photo .slot-preview{display:block}
+  .photo-slot.has-photo .slot-placeholder{display:none}
+  .slot-badge{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:20px;display:none}
+  .photo-slot.has-photo .slot-badge{display:block}
+  .slot-retake{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;white-space:nowrap;display:none}
+  .photo-slot.has-photo .slot-retake{display:block}
+  .slot-comp{position:absolute;inset:0;background:rgba(26,26,46,.75);display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px}
+  .slot-comp.active{display:flex}
+  .slot-comp p{color:#fff;font-size:10px}
+  .photo-note{margin-top:10px;display:flex;align-items:flex-start;gap:6px;background:var(--accent-light);border-radius:var(--radius-sm);padding:10px 12px}
+  .photo-note p{font-size:11px;color:var(--accent-dark);line-height:1.5}
+  .photos-err{margin-top:8px;font-size:11px;color:var(--danger);display:none}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .submit-btn{width:100%;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .1s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .submit-btn:hover{background:var(--accent-dark)}
+  .submit-btn:active{transform:scale(.98)}
+  .submit-btn:disabled{opacity:.65;cursor:not-allowed}
+  .status-box{display:none;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-top:12px}
+  .status-box.show{display:block}
+  .status-step{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+  .status-step.done .dot{background:var(--success)}
+  .status-step.active .dot{background:var(--accent);animation:pulse 1s infinite}
+  .status-step.done{color:var(--ink)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .success-screen{display:none;text-align:center;padding:40px 20px}
+  .success-screen.show{display:block}
+  .success-icon{width:72px;height:72px;background:#e6f5f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px}
+  .success-screen h2{font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;margin-bottom:8px}
+  .success-screen p{font-size:14px;color:var(--ink-soft);line-height:1.6}
+  .new-btn{display:inline-block;margin-top:24px;padding:12px 28px;background:var(--ink);color:#fff;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+  input[type="file"]{display:none}
+</style>
 </head>
 <body>
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">Submission Form</div>
+    <h1>Photo Documentation</h1>
+    <p>Fill in your details and capture 4 photos. Each photo is auto-compressed to under 2 MB.</p>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  </div>
+</div>
+<div class="body">
+  <div class="section">
+    <div class="section-title">Personal Details</div>
+    <div class="field">
+      <label>ID Number <span class="req">*</span></label>
+      <input type="text" id="fieldId" placeholder="e.g. EMP-00123" autocomplete="off">
+      <div class="err-msg">Please enter your ID number.</div>
+    </div>
+    <div class="field">
+      <label>Full Name <span class="req">*</span></label>
+      <input type="text" id="fieldName" placeholder="Your full name" autocomplete="name">
+      <div class="err-msg">Please enter your full name.</div>
+    </div>
+    <div class="field">
+      <label>Mobile Number <span class="req">*</span></label>
+      <input type="tel" id="fieldMobile" placeholder="+91 98765 43210" autocomplete="tel">
+      <div class="err-msg">Please enter a valid mobile number.</div>
+    </div>
+  </div>
 
-<h2>Photo Form</h2>
+  <div class="section">
+    <div class="section-title">Photo Capture</div>
+    <div class="photo-grid">
+      <div class="photo-slot" id="slot0" onclick="triggerCamera(0)">
+        <div class="slot-placeholder"><div class="slot-icon">📷</div><div class="slot-label">Photo 1</div><div class="slot-num">Tap to capture</div></div>
+        <img class="slot-preview" id="prev0"><div class="slot-badge" id="badge0"></div>
+        <div class="slot-retake">↺ Retake</div>
+        <div class="slot-comp" id="comp0"><div class="spinner"></div><p>Compressing…</p></div>
+      </div>
+      <div class="photo-slot" id="slot1" onclick="triggerCamera(1)">
+        <div class="slot-placeholder"><div class="slot-icon">📷</div><div class="slot-label">Photo 2</div><div class="slot-num">Tap to capture</div></div>
+        <img class="slot-preview" id="prev1"><div class="slot-badge" id="badge1"></div>
+        <div class="slot-retake">↺ Retake</div>
+        <div class="slot-comp" id="comp1"><div class="spinner"></div><p>Compressing…</p></div>
+      </div>
+      <div class="photo-slot" id="slot2" onclick="triggerCamera(2)">
+        <div class="slot-placeholder"><div class="slot-icon">📷</div><div class="slot-label">Photo 3</div><div class="slot-num">Tap to capture</div></div>
+        <img class="slot-preview" id="prev2"><div class="slot-badge" id="badge2"></div>
+        <div class="slot-retake">↺ Retake</div>
+        <div class="slot-comp" id="comp2"><div class="spinner"></div><p>Compressing…</p></div>
+      </div>
+      <div class="photo-slot" id="slot3" onclick="triggerCamera(3)">
+        <div class="slot-placeholder"><div class="slot-icon">📷</div><div class="slot-label">Photo 4</div><div class="slot-num">Tap to capture</div></div>
+        <img class="slot-preview" id="prev3"><div class="slot-badge" id="badge3"></div>
+        <div class="slot-retake">↺ Retake</div>
+        <div class="slot-comp" id="comp3"><div class="spinner"></div><p>Compressing…</p></div>
+      </div>
+    </div>
+    <div class="photo-note"><p>ℹ Photos auto-compress to <strong>1–2 MB</strong>. Tap a slot to open your camera directly. Tap again to retake.</p></div>
+    <div class="photos-err" id="photosErr">Please capture all 4 photos before submitting.</div>
+  </div>
 
-<input id="fieldId" placeholder="ID"><br><br>
-<input id="fieldName" placeholder="Name"><br><br>
-<input id="fieldMobile" placeholder="Mobile"><br><br>
+  <!-- FIX: capture="environment" opens rear camera directly on phones -->
+  <input type="file" id="cam0" accept="image/*" capture="environment" onchange="handleCapture(event,0)">
+  <input type="file" id="cam1" accept="image/*" capture="environment" onchange="handleCapture(event,1)">
+  <input type="file" id="cam2" accept="image/*" capture="environment" onchange="handleCapture(event,2)">
+  <input type="file" id="cam3" accept="image/*" capture="environment" onchange="handleCapture(event,3)">
 
-<input type="file" id="p0" accept="image/*"><br><br>
-<input type="file" id="p1" accept="image/*"><br><br>
-<input type="file" id="p2" accept="image/*"><br><br>
-<input type="file" id="p3" accept="image/*"><br><br>
+  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+    <span id="btnText">Submit Form</span>
+  </button>
 
-<button onclick="submitForm()">Submit</button>
+  <div class="status-box" id="statusBox">
+    <div class="status-step" id="step1"><div class="dot"></div><span>Compressing photos…</span></div>
+    <div class="status-step" id="step2"><div class="dot"></div><span>Uploading to Google Drive…</span></div>
+    <div class="status-step" id="step3"><div class="dot"></div><span>Saving to Google Sheets…</span></div>
+  </div>
+
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>Submitted!</h2>
+    <p>Your details and 4 photos have been saved to Google Drive and Google Sheets.</p>
+    <button class="new-btn" onclick="resetForm()">Submit Another Response</button>
+  </div>
+</div>
 
 <script>
-const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+// ── PASTE YOUR DEPLOYED WEB APP URL HERE ──────────────────────
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+// ──────────────────────────────────────────────────────────────
 
-async function blobToBase64(file) {
-  return new Promise((resolve) => {
+const MAX_MB = 2, TARGET_MB = 1.5, MAX_DIM = 1920;
+const photos = [null, null, null, null]; // stores compressed base64 strings
+
+// FIX 1: Canvas compression — reduces 5MB phone photo to 1-2MB
+function compressImage(file) {
+  return new Promise(resolve => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = async () => {
+        let w = img.width, h = img.height;
+        if (w > MAX_DIM || h > MAX_DIM) {
+          const r = Math.min(MAX_DIM/w, MAX_DIM/h);
+          w = Math.round(w*r); h = Math.round(h*r);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+        // Quick check: already small enough at high quality?
+        let blob = await toBlob(canvas, 0.85);
+        if (blob.size <= TARGET_MB*1024*1024) { resolve(blob); return; }
+
+        // Binary search for best quality that stays under MAX_MB
+        let lo = 0.20, hi = 0.85, best = null;
+        for (let i = 0; i < 8; i++) {
+          const mid = (lo+hi)/2;
+          blob = await toBlob(canvas, mid);
+          if (blob.size <= MAX_MB*1024*1024) { best = blob; lo = mid; }
+          else { hi = mid; }
+        }
+        resolve(best || await toBlob(canvas, 0.20));
+      };
+      img.src = e.target.result;
+    };
     reader.readAsDataURL(file);
   });
 }
 
-async function submitForm() {
-  const id = document.getElementById('fieldId').value;
-  const name = document.getElementById('fieldName').value;
-  const mobile = document.getElementById('fieldMobile').value;
+function toBlob(canvas, q) {
+  return new Promise(r => canvas.toBlob(b => r(b), 'image/jpeg', q));
+}
 
-  const inputs = [
-    document.getElementById('p0').files[0],
-    document.getElementById('p1').files[0],
-    document.getElementById('p2').files[0],
-    document.getElementById('p3').files[0]
-  ];
+// Convert blob → raw base64 (no data: prefix)
+function blobToBase64(blob) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+}
 
-  if (inputs.some(p => !p)) {
-    alert("All 4 photos required");
+function triggerCamera(idx) {
+  const input = document.getElementById('cam'+idx);
+  input.value = ''; // allow retake of same photo
+  input.click();
+}
+
+async function handleCapture(e, idx) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const slot = document.getElementById('slot'+idx);
+  const comp = document.getElementById('comp'+idx);
+  slot.classList.remove('has-photo','error-slot');
+  comp.classList.add('active');
+
+  const blob = await compressImage(file);
+  photos[idx] = await blobToBase64(blob);
+
+  document.getElementById('prev'+idx).src = URL.createObjectURL(blob);
+  document.getElementById('badge'+idx).textContent = (blob.size/1048576).toFixed(2)+' MB';
+  comp.classList.remove('active');
+  slot.classList.add('has-photo');
+  document.getElementById('photosErr').style.display = 'none';
+  updateProgress();
+}
+
+function updateProgress() {
+  const p = photos.filter(x => x).length;
+  const f = ['fieldId','fieldName','fieldMobile'].filter(id => document.getElementById(id).value.trim()).length;
+  document.getElementById('progressBar').style.width = Math.round(((p+f)/7)*100)+'%';
+}
+['fieldId','fieldName','fieldMobile'].forEach(id =>
+  document.getElementById(id).addEventListener('input', updateProgress)
+);
+
+function validate() {
+  let ok = true;
+  ['fieldId','fieldName','fieldMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('error'); ok = false; }
+    else el.classList.remove('error');
+  });
+  const mob = document.getElementById('fieldMobile');
+  if (mob.value.trim() && mob.value.replace(/\D/g,'').length < 7) {
+    mob.classList.add('error'); ok = false;
+  }
+  if (!photos.every(p => p)) {
+    document.getElementById('photosErr').style.display = 'block';
+    photos.forEach((p,i) => { if (!p) document.getElementById('slot'+i).classList.add('error-slot'); });
+    ok = false;
+  }
+  return ok;
+}
+
+function setStep(n, state) {
+  const el = document.getElementById('step'+n);
+  el.classList.remove('active','done');
+  if (state) el.classList.add(state);
+}
+
+async function handleSubmit() {
+  if (!validate()) {
+    document.querySelector('.error,.error-slot')?.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('btnText').innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><span class="spinner"></span>Submitting…</span>';
 
-  const baseData = {
-    id, name, mobile,
-    timestamp: new Date().toISOString()
-  };
+  document.getElementById('statusBox').classList.add('show');
+  setStep(1,'active');
+  await new Promise(r => setTimeout(r, 500));
+  setStep(1,'done'); setStep(2,'active');
 
-  const urls = [];
-
-  // 🔥 upload one by one
-  for (let i = 0; i < inputs.length; i++) {
-    const base64 = await blobToBase64(inputs[i]);
-
-    const fd = new FormData();
-    fd.append("id", id);
-    fd.append("name", name);
-    fd.append("mobile", mobile);
-    fd.append("timestamp", baseData.timestamp);
-
-    fd.append("photoIndex", i+1);
-    fd.append("photoData", base64);
+  try {
+    // FIX 2: Send as JSON — Apps Script can read this via e.postData.contents
+    const payload = {
+      id:        document.getElementById('fieldId').value.trim(),
+      name:      document.getElementById('fieldName').value.trim(),
+      mobile:    document.getElementById('fieldMobile').value.trim(),
+      timestamp: new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}),
+      photo1:    photos[0],
+      photo2:    photos[1],
+      photo3:    photos[2],
+      photo4:    photos[3]
+    };
 
     const res = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: fd
+      method: 'POST',
+      body:   JSON.stringify(payload)
+      // No Content-Type header — avoids CORS preflight
     });
 
-    const data = await res.json();
-    urls.push(data.url);
+    setStep(2,'done'); setStep(3,'active');
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = {status:'ok'}; }
+    if (data.status === 'error') throw new Error(data.message);
+
+    await new Promise(r => setTimeout(r, 400));
+    setStep(3,'done');
+    showSuccess();
+
+  } catch(err) {
+    btn.disabled = false;
+    document.getElementById('btnText').textContent = 'Submit Form';
+    document.getElementById('statusBox').classList.remove('show');
+    setStep(1,''); setStep(2,''); setStep(3,'');
+    alert('Submission failed. Please check your internet and try again.\n\nError: '+err.message);
   }
+}
 
-  // 🔥 final save
-  const final = new FormData();
-  final.append("final", "true");
+function showSuccess() {
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('statusBox').style.display = 'none';
+  document.getElementById('successScreen').classList.add('show');
+  document.getElementById('progressBar').style.width = '100%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-  final.append("id", id);
-  final.append("name", name);
-  final.append("mobile", mobile);
-  final.append("timestamp", baseData.timestamp);
-
-  urls.forEach((u,i)=> final.append("photo"+(i+1), u));
-
-  await fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    body: final
+function resetForm() {
+  photos.fill(null);
+  ['fieldId','fieldName','fieldMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = ''; el.classList.remove('error');
   });
-
-  alert("SUCCESS ✅");
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('slot'+i).className = 'photo-slot';
+    document.getElementById('prev'+i).src = '';
+    document.getElementById('badge'+i).textContent = '';
+  }
+  document.getElementById('photosErr').style.display = 'none';
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'block');
+  const btn = document.getElementById('submitBtn');
+  btn.style.display = 'flex'; btn.disabled = false;
+  document.getElementById('btnText').textContent = 'Submit Form';
+  document.getElementById('statusBox').classList.remove('show');
+  setStep(1,''); setStep(2,''); setStep(3,'');
+  document.getElementById('successScreen').classList.remove('show');
+  document.getElementById('progressBar').style.width = '0%';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 </script>
-
 </body>
 </html>
