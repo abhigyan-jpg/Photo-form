@@ -102,7 +102,7 @@
       <div class="err-msg">Please enter a valid mobile number.</div>
     </div>
   </div>
-
+ 
   <div class="section">
     <div class="section-title">Photo Capture</div>
     <div class="photo-grid">
@@ -134,23 +134,23 @@
     <div class="photo-note"><p>ℹ Photos auto-compress to <strong>1–2 MB</strong>. Tap a slot to open your camera directly. Tap again to retake.</p></div>
     <div class="photos-err" id="photosErr">Please capture all 4 photos before submitting.</div>
   </div>
-
+ 
   <!-- FIX: capture="environment" opens rear camera directly on phones -->
   <input type="file" id="cam0" accept="image/*" capture="environment" onchange="handleCapture(event,0)">
   <input type="file" id="cam1" accept="image/*" capture="environment" onchange="handleCapture(event,1)">
   <input type="file" id="cam2" accept="image/*" capture="environment" onchange="handleCapture(event,2)">
   <input type="file" id="cam3" accept="image/*" capture="environment" onchange="handleCapture(event,3)">
-
+ 
   <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
     <span id="btnText">Submit Form</span>
   </button>
-
+ 
   <div class="status-box" id="statusBox">
     <div class="status-step" id="step1"><div class="dot"></div><span>Compressing photos…</span></div>
     <div class="status-step" id="step2"><div class="dot"></div><span>Uploading to Google Drive…</span></div>
     <div class="status-step" id="step3"><div class="dot"></div><span>Saving to Google Sheets…</span></div>
   </div>
-
+ 
   <div class="success-screen" id="successScreen">
     <div class="success-icon">✓</div>
     <h2>Submitted!</h2>
@@ -158,15 +158,15 @@
     <button class="new-btn" onclick="resetForm()">Submit Another Response</button>
   </div>
 </div>
-
+ 
 <script>
 // ── PASTE YOUR DEPLOYED WEB APP URL HERE ──────────────────────
 const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 // ──────────────────────────────────────────────────────────────
-
+ 
 const MAX_MB = 2, TARGET_MB = 1.5, MAX_DIM = 1920;
 const photos = [null, null, null, null]; // stores compressed base64 strings
-
+ 
 // FIX 1: Canvas compression — reduces 5MB phone photo to 1-2MB
 function compressImage(file) {
   return new Promise(resolve => {
@@ -182,11 +182,11 @@ function compressImage(file) {
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-
+ 
         // Quick check: already small enough at high quality?
         let blob = await toBlob(canvas, 0.85);
         if (blob.size <= TARGET_MB*1024*1024) { resolve(blob); return; }
-
+ 
         // Binary search for best quality that stays under MAX_MB
         let lo = 0.20, hi = 0.85, best = null;
         for (let i = 0; i < 8; i++) {
@@ -202,11 +202,11 @@ function compressImage(file) {
     reader.readAsDataURL(file);
   });
 }
-
+ 
 function toBlob(canvas, q) {
   return new Promise(r => canvas.toBlob(b => r(b), 'image/jpeg', q));
 }
-
+ 
 // Convert blob → raw base64 (no data: prefix)
 function blobToBase64(blob) {
   return new Promise(resolve => {
@@ -215,13 +215,13 @@ function blobToBase64(blob) {
     reader.readAsDataURL(blob);
   });
 }
-
+ 
 function triggerCamera(idx) {
   const input = document.getElementById('cam'+idx);
   input.value = ''; // allow retake of same photo
   input.click();
 }
-
+ 
 async function handleCapture(e, idx) {
   const file = e.target.files[0];
   if (!file) return;
@@ -229,10 +229,10 @@ async function handleCapture(e, idx) {
   const comp = document.getElementById('comp'+idx);
   slot.classList.remove('has-photo','error-slot');
   comp.classList.add('active');
-
+ 
   const blob = await compressImage(file);
   photos[idx] = await blobToBase64(blob);
-
+ 
   document.getElementById('prev'+idx).src = URL.createObjectURL(blob);
   document.getElementById('badge'+idx).textContent = (blob.size/1048576).toFixed(2)+' MB';
   comp.classList.remove('active');
@@ -240,7 +240,7 @@ async function handleCapture(e, idx) {
   document.getElementById('photosErr').style.display = 'none';
   updateProgress();
 }
-
+ 
 function updateProgress() {
   const p = photos.filter(x => x).length;
   const f = ['fieldId','fieldName','fieldMobile'].filter(id => document.getElementById(id).value.trim()).length;
@@ -249,7 +249,7 @@ function updateProgress() {
 ['fieldId','fieldName','fieldMobile'].forEach(id =>
   document.getElementById(id).addEventListener('input', updateProgress)
 );
-
+ 
 function validate() {
   let ok = true;
   ['fieldId','fieldName','fieldMobile'].forEach(id => {
@@ -268,13 +268,13 @@ function validate() {
   }
   return ok;
 }
-
+ 
 function setStep(n, state) {
   const el = document.getElementById('step'+n);
   el.classList.remove('active','done');
   if (state) el.classList.add(state);
 }
-
+ 
 async function handleSubmit() {
   if (!validate()) {
     document.querySelector('.error,.error-slot')?.scrollIntoView({behavior:'smooth',block:'center'});
@@ -283,12 +283,12 @@ async function handleSubmit() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   document.getElementById('btnText').innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><span class="spinner"></span>Submitting…</span>';
-
+ 
   document.getElementById('statusBox').classList.add('show');
   setStep(1,'active');
   await new Promise(r => setTimeout(r, 500));
   setStep(1,'done'); setStep(2,'active');
-
+ 
   try {
     // FIX 2: Send as JSON — Apps Script can read this via e.postData.contents
     const payload = {
@@ -301,23 +301,23 @@ async function handleSubmit() {
       photo3:    photos[2],
       photo4:    photos[3]
     };
-
+ 
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       body:   JSON.stringify(payload)
       // No Content-Type header — avoids CORS preflight
     });
-
+ 
     setStep(2,'done'); setStep(3,'active');
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch { data = {status:'ok'}; }
     if (data.status === 'error') throw new Error(data.message);
-
+ 
     await new Promise(r => setTimeout(r, 400));
     setStep(3,'done');
     showSuccess();
-
+ 
   } catch(err) {
     btn.disabled = false;
     document.getElementById('btnText').textContent = 'Submit Form';
@@ -326,7 +326,7 @@ async function handleSubmit() {
     alert('Submission failed. Please check your internet and try again.\n\nError: '+err.message);
   }
 }
-
+ 
 function showSuccess() {
   document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
   document.getElementById('submitBtn').style.display = 'none';
@@ -335,7 +335,7 @@ function showSuccess() {
   document.getElementById('progressBar').style.width = '100%';
   window.scrollTo({top:0,behavior:'smooth'});
 }
-
+ 
 function resetForm() {
   photos.fill(null);
   ['fieldId','fieldName','fieldMobile'].forEach(id => {
